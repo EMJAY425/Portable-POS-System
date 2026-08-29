@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sari-Sari Store | Secure Login</title>
+    <style>
+        /* Main background: Your original Dark Blue */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #2c3e50;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff; /* White background for the main content area */
+        }
+
+        /* Left Side: Value Proposition */
+        .brand-section {
+            flex: 1;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: #f8f9fa; /* Light grey contrast */
+        }
+
+        .brand-section h1 {
+            color: #1abc9c; /* Your Teal color */
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+
+        .brand-section h2 {
+            color: #2c3e50;
+            font-size: 48px;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .brand-section p {
+            color: #5f6368;
+            font-size: 18px;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        /* Right Side: Login Card */
+        .form-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+                              url('https://www.transparenttextures.com/patterns/cubes.png');
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 400px;
+            border: 1px solid #1abc9c;
+            text-align: center;
+        }
+
+        .login-card h3 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 1px solid #dfe1e5;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f1f3f4;
+            box-sizing: border-box;
+        }
+
+        /* Login Button: Your Teal color */
+        .btn-login {
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background-color: #16a085;
+        }
+
+        /* Signup Button: Forest Green */
+        .btn-signup {
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .links {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #1abc9c;
+            text-decoration: none;
+        }
+
+        .footer-text {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            font-size: 12px;
+            color: #9aa0a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="brand-section">
+            <h1>Sari-Sari Store System</h1>
+            <h2>Empowering Local<br>micro-entrepreneurs</h2>
+            <p>A secure and easy-to-use Point-of-Sale solution tailored for community entrepreneurs. Designed to streamline your daily operations, this system allows you to effortlessly log in to manage your products and track sales in real-time. Beyond simple organization, you can generate professional, printable receipts and detailed sales reports to keep your business records precise and up-to-date. Experience the convenience of a technical edge that turns manual inventory tracking into a seamless digital workflow.</p>
+        </div>
+
+        <div class="form-section">
+            <div class="login-card">
+                <h3>Secure Login</h3>
+
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    {% for m in messages %}<p style="color:red; font-size:14px;">{{m}}</p>{% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+                    <div class="input-group"
+                         style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #ddd; border-radius: 5px; background: #ecf0f1; margin-bottom: 20px;">
+
+                        <input type="text" name="username" placeholder="Email or Username" required
+                               style="border: none; padding: 12px; font-size: 1rem; flex-grow: 1; margin: 0; background: transparent; outline: none; -webkit-box-shadow: none; box-shadow: none;">
+
+                    </div>
+
+                    <div class="input-field"
+                         style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #ddd; border-radius: 5px; background: #ecf0f1; margin-bottom: 20px;">
+
+                        <input type="password" name="password" id="passwordField" placeholder="Password" required
+                               style="border: none; padding: 12px; font-size: 1rem; flex-grow: 1; margin: 0; background: transparent; outline: none; -webkit-box-shadow: none; box-shadow: none;">
+
+                        <div style="padding-right: 12px; display: flex; align-items: center;">
+                            <input type="checkbox" id="togglePassword"
+                                style="cursor: pointer; margin: 0; width: 16px; height: 16px;">
+                            </div>
+
+                    </div>
+
+                    <button type="submit" class="btn-login">Log In</button>
+
+                    <div class="links">
+                        <a href="{{ url_for('forgot_password') }}">Forgotten your password? Reset here</a>
+                    </div>
+
+                    <div style="margin: 20px 0; color: #70757a;">- or -</div>
+
+                    <a href="{{ url_for('signup') }}" class="btn-signup">Create New Business Account</a>
+                </form>
+            </div>
+            <div class="footer-text">© 2026 Sari-Sari POS Solutions | Secure Login</div>
+        </div>
+    </div>.
+    <script>
+        const passwordField = document.getElementById('passwordField');
+        const togglePassword = document.getElementById('togglePassword');
+
+        togglePassword.addEventListener('change', function() {
+            // Toggle the type attribute
+            const type = this.checked ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+        });
+    </script>
+</body>
+</html>

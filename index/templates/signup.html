@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up | Sari-Sari App</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); width: 400px; }
+        h2 { margin: 0; font-size: 24px; }
+        p { color: #606770; font-size: 15px; }
+        hr { border: 0; border-top: 1px solid #dadde1; margin: 20px 0; }
+        input { width: 100%; padding: 11px; margin: 8px 0; border: 1px solid #dddfe2; border-radius: 5px; box-sizing: border-box; background-color: #f5f6f7; }
+        .btn-signup { background-color: #00a400; color: white; border: none; width: 100%; padding: 10px; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        .back-link { display: block; text-align: center; margin-top: 15px; color: #1877f2; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Create a new account</h2>
+        <p>It's quick and easy.</p>
+        <hr>
+        {% with messages = get_flashed_messages() %}{% if messages %}
+            {% for m in messages %}<p style="color:red; font-size:13px;">{{m}}</p>{% endfor %}
+        {% endif %}{% endwith %}
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="New password" required>
+            <p style="margin-top: 10px; font-weight: bold;">Security Question:</p>
+            <input type="text" name="recovery_answer" placeholder="What is your favorite food? (Recovery Answer)" required>
+            <button type="submit" class="btn-signup">Sign Up</button>
+            <a href="{{ url_for('login') }}" class="back-link">Already have an account?</a>
+        </form>
+    </div>
+</body>
+</html>

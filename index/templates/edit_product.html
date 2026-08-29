@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Update Product: {{ product.name }}</h2>
+
+<div style="background: #f9f9f9; padding: 20px; border-radius: 5px;">
+    <form action="{{ url_for('update_product', id=product.id) }}" method="POST">
+        <div style="margin-bottom: 15px;">
+            <label>Product Name:</label><br>
+            <input type="text" name="name" value="{{ product.name }}" style="width: 100%;" required>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Price (₱):</label><br>
+            <input type="number" step="0.01" name="price" value="{{ product.price }}" style="width: 100%;" required>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Stock Level:</label><br>
+            <input type="number" name="stock" value="{{ product.stock }}" style="width: 100%;" required>
+        </div>
+        
+        <button type="submit" class="btn btn-green">Save Changes</button>
+        <a href="{{ url_for('products') }}" class="btn" style="background-color: #95a5a6;">Cancel</a>
+    </form>
+</div>
+{% endblock %}

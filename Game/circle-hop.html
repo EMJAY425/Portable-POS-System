@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circle Hop</title>
+<style>
+  :root {
+    --sky-top: #6ec6ff;
+    --sky-bottom: #bfe9ff;
+    --pipe-green: #3fb04a;
+    --pipe-dark: #2d8a37;
+    --ground: #ded18f;
+    --ground-dark: #c9b96e;
+    --circle: #ffcf3f;
+    --circle-dark: #d99e00;
+    --ui-dark: #1b2b34;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0e1a20;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    overflow: hidden;
+  }
+  #game-wrap {
+    position: relative;
+    width: 400px;
+    height: 640px;
+    max-width: 100vw;
+    max-height: 100vh;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(var(--sky-top), var(--sky-bottom));
+  }
+  #score {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 48px;
+    font-weight: 900;
+    color: #fff;
+    -webkit-text-stroke: 2px #2d8a37;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    pointer-events: none;
+    user-select: none;
+  }
+  #start-screen, #gameover-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+  }
+  #start-screen h1, #gameover-screen h1 {
+    font-size: 34px;
+    margin: 0 0 10px;
+    text-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  }
+  #start-screen p, #gameover-screen p {
+    margin: 4px 0 20px;
+    font-size: 15px;
+    opacity: 0.9;
+  }
+  .btn {
+    background: var(--circle);
+    color: #4a3400;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--circle-dark);
+    transition: transform 0.05s;
+  }
+  .btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--circle-dark);
+  }
+  #gameover-screen { display: none; }
+
+  /* Music player popup */
+  #music-popup {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 8, 12, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 10;
+  }
+  #player-card {
+    width: 300px;
+    background: linear-gradient(160deg, #22323c, var(--ui-dark));
+    border-radius: 18px;
+    padding: 22px;
+    color: #fff;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    text-align: center;
+    animation: pop-in 0.25s ease-out;
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  #art {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 16px;
+    border-radius: 12px;
+    background: conic-gradient(from 180deg, #ffcf3f, #ff8a3f, #ff3f6e, #7a3fff, #3fb0ff, #ffcf3f);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  #art::after {
+    content: '';
+    position: absolute;
+    inset: 30%;
+    background: var(--ui-dark);
+    border-radius: 50%;
+    border: 3px solid #0008;
+  }
+  #art.spinning { animation: spin 3s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #track-title { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+  #track-sub { font-size: 12px; opacity: 0.65; margin-bottom: 16px; }
+
+  #seek {
+    width: 100%;
+    accent-color: var(--circle);
+    margin-bottom: 6px;
+  }
+  #time-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    opacity: 0.6;
+    margin-bottom: 16px;
+  }
+  #controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  #controls button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 6px;
+  }
+  #play-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--circle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #play-btn svg { fill: #4a3400; }
+  .side-btn svg { fill: #cfd8dc; width: 22px; height: 22px; }
+
+  #popup-note {
+    font-size: 11px;
+    opacity: 0.5;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+  #close-popup {
+    background: transparent;
+    border: 1px solid #ffffff55;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  #close-popup:hover { background: #ffffff15; }
+
+  #upload-row {
+    margin-top: 10px;
+  }
+  #upload-row label {
+    font-size: 11px;
+    color: var(--circle);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-wrap">
+  <canvas id="game" width="400" height="640"></canvas>
+  <div id="score">0</div>
+
+  <div id="start-screen">
+    <h1>Circle Hop</h1>
+    <p>Tap / click / press Space<br>to keep the circle airborne.<br>Hit a pipe and see what happens...</p>
+    <button class="btn" id="start-btn">Play</button>
+  </div>
+
+  <div id="gameover-screen">
+    <h1>Game Over</h1>
+    <p id="final-score-text">Score: 0</p>
+    <button class="btn" id="retry-btn">Retry</button>
+  </div>
+
+  <div id="music-popup">
+    <div id="player-card">
+      <div id="art" class="spinning"></div>
+      <div id="track-title">Your Track Here</div>
+      <div id="track-sub">Add your own MP3 below</div>
+      <input type="range" id="seek" value="0" min="0" max="100">
+      <div id="time-row"><span id="cur-time">0:00</span><span id="dur-time">0:00</span></div>
+      <div id="controls">
+        <button class="side-btn" id="prev-btn" aria-label="Previous">
+          <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+        <button id="play-btn" aria-label="Play/Pause">
+          <svg id="play-icon" viewBox="0 0 24 24" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="side-btn" id="next-btn" aria-label="Next">
+          <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
+        </button>
+      </div>
+      <div id="popup-note">
+        Ouch — pipe collision! This is a placeholder player (no copyrighted audio is bundled). Load your own licensed MP3 to hear something on impact.
+      </div>
+      <div id="upload-row">
+        <label for="file-input">+ load a local mp3 to play here</label>
+        <input type="file" id="file-input" accept="audio/*" style="display:none">
+      </div>
+      <br>
+      <button id="close-popup" class="btn" style="margin-top:14px;">Back to Game</button>
+    </div>
+  </div>
+</div>
+
+<audio id="audio-el"></audio>
+
+<script>
+(function() {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const scoreEl = document.getElementById('score');
+  const startScreen = document.getElementById('start-screen');
+  const gameoverScreen = document.getElementById('gameover-screen');
+  const finalScoreText = document.getElementById('final-score-text');
+  const startBtn = document.getElementById('start-btn');
+  const retryBtn = document.getElementById('retry-btn');
+  const musicPopup = document.getElementById('music-popup');
+  const closePopupBtn = document.getElementById('close-popup');
+
+  const GRAVITY = 0.22;
+  const FLAP = -5.5;
+  const PIPE_W = 62;
+  const GAP = 210;
+  const PIPE_SPEED = 1.8;
+  const GROUND_H = 70;
+
+  let state = 'ready'; // ready, playing, hit, over
+  let frame = 0;
+  let score = 0;
+  let pipes = [];
+  let particles = [];
+
+  const circle = {
+    x: 100,
+    y: H / 2,
+    r: 16,
+    vy: 0,
+    rot: 0
+  };
+
+  function resetGame() {
+    circle.x = 100;
+    circle.y = H / 2;
+    circle.vy = 0;
+    circle.rot = 0;
+    pipes = [];
+    particles = [];
+    score = 0;
+    frame = 0;
+    scoreEl.textContent = '0';
+    spawnPipe(W + 100);
+    spawnPipe(W + 100 + 220);
+    spawnPipe(W + 100 + 440);
+  }
+
+  function spawnPipe(x) {
+    const margin = 80;
+    const centerY = margin + Math.random() * (H - GROUND_H - margin * 2 - GAP) + GAP / 2;
+    pipes.push({ x: x, gapY: centerY, passed: false });
+  }
+
+  function flap() {
+    if (state === 'ready') {
+      state = 'playing';
+      startScreen.style.display = 'none';
+    }
+    if (state === 'playing') {
+      circle.vy = FLAP;
+    }
+    if (state === 'over') {
+      // ignore, must press retry
+    }
+  }
+
+  function rectCircleColliding(cx, cy, cr, rx, ry, rw, rh) {
+    const closestX = Math.max(rx, Math.min(cx, rx + rw));
+    const closestY = Math.max(ry, Math.min(cy, ry + rh));
+    const dx = cx - closestX;
+    const dy = cy - closestY;
+    return (dx * dx + dy * dy) < (cr * cr);
+  }
+
+  function triggerHit() {
+    state = 'hit';
+    for (let i = 0; i < 18; i++) {
+      particles.push({
+        x: circle.x, y: circle.y,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
+        life: 30
+      });
+    }
+    setTimeout(() => {
+      openMusicPopup();
+    }, 350);
+  }
+
+  function openMusicPopup() {
+    musicPopup.style.display = 'flex';
+  }
+
+  function endGameAfterPopup() {
+    state = 'over';
+    finalScoreText.textContent = 'Score: ' + score;
+    gameoverScreen.style.display = 'flex';
+  }
+
+  closePopupBtn.addEventListener('click', () => {
+    musicPopup.style.display = 'none';
+    pauseTrack();
+    endGameAfterPopup();
+  });
+
+  function update() {
+    if (state !== 'playing') return;
+    frame++;
+
+    circle.vy += GRAVITY;
+    circle.y += circle.vy;
+    circle.rot = Math.max(-0.5, Math.min(1.2, circle.vy * 0.06));
+
+    if (circle.y + circle.r > H - GROUND_H) {
+      circle.y = H - GROUND_H - circle.r;
+      triggerHit();
+    }
+    if (circle.y - circle.r < 0) {
+      circle.y = circle.r;
+      circle.vy = 0;
+    }
+
+    for (const p of pipes) {
+      p.x -= PIPE_SPEED;
+
+      if (!p.passed && p.x + PIPE_W < circle.x - circle.r) {
+        p.passed = true;
+        score++;
+        scoreEl.textContent = score;
+      }
+
+      const topH = p.gapY - GAP / 2;
+      const bottomY = p.gapY + GAP / 2;
+
+      if (rectCircleColliding(circle.x, circle.y, circle.r, p.x, 0, PIPE_W, topH) ||
+          rectCircleColliding(circle.x, circle.y, circle.r, p.x, bottomY, PIPE_W, H - GROUND_H - bottomY)) {
+        triggerHit();
+      }
+    }
+
+    if (pipes.length && pipes[0].x < -PIPE_W - 40) {
+      pipes.shift();
+      spawnPipe(pipes[pipes.length - 1].x + 220);
+    }
+
+    for (const pt of particles) {
+      pt.x += pt.vx;
+      pt.y += pt.vy;
+      pt.life--;
+    }
+    particles = particles.filter(pt => pt.life > 0);
+  }
+
+  function drawPipe(p) {
+    const topH = p.gapY - GAP / 2;
+    const bottomY = p.gapY + GAP / 2;
+
+    drawCylinder(p.x, 0, PIPE_W, topH, true);
+    drawCylinder(p.x, bottomY, PIPE_W, H - GROUND_H - bottomY, false);
+  }
+
+  function drawCylinder(x, y, w, h, isTop) {
+    const grad = ctx.createLinearGradient(x, 0, x + w, 0);
+    grad.addColorStop(0, '#2d8a37');
+    grad.addColorStop(0.15, '#3fb04a');
+    grad.addColorStop(0.5, '#57c964');
+    grad.addColorStop(0.85, '#3fb04a');
+    grad.addColorStop(1, '#276e30');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, y, w, h);
+
+    const capY = isTop ? y + h : y;
+    ctx.fillStyle = '#2d8a37';
+    ctx.beginPath();
+    ctx.ellipse(x + w / 2, capY, w / 2 + 4, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4fc95c';
+    ctx.beginPath();
+    ctx.ellipse(x + w / 2, capY, w / 2 + 4, 10, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#1f5c27';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, w, h);
+  }
+
+  function drawGround() {
+    ctx.fillStyle = '#ded18f';
+    ctx.fillRect(0, H - GROUND_H, W, GROUND_H);
+    ctx.fillStyle = '#c9b96e';
+    for (let i = 0; i < W / 20 + 2; i++) {
+      const gx = ((frame * PIPE_SPEED * -1) % 20) + i * 20;
+      ctx.fillRect(gx, H - GROUND_H, 10, 8);
+    }
+    ctx.fillStyle = '#8a9c46';
+    ctx.fillRect(0, H - GROUND_H, W, 6);
+  }
+
+  function drawCircleChar() {
+    ctx.save();
+    ctx.translate(circle.x, circle.y);
+    ctx.rotate(circle.rot);
+
+    ctx.beginPath();
+    ctx.arc(0, 0, circle.r, 0, Math.PI * 2);
+    const grad = ctx.createRadialGradient(-5, -5, 2, 0, 0, circle.r);
+    grad.addColorStop(0, '#fff6c9');
+    grad.addColorStop(0.5, '#ffcf3f');
+    grad.addColorStop(1, '#d99e00');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#a97400';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(5, -3, 3.2, 0, Math.PI * 2);
+    ctx.fillStyle = '#2b2b2b';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(circle.r - 2, 2);
+    ctx.lineTo(circle.r + 8, 4);
+    ctx.lineTo(circle.r - 2, 8);
+    ctx.closePath();
+    ctx.fillStyle = '#ff8a3f';
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    for (const pt of particles) {
+      ctx.globalAlpha = Math.max(pt.life / 30, 0);
+      ctx.fillStyle = '#ffcf3f';
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawClouds() {
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    for (let i = 0; i < 3; i++) {
+      const cx = ((frame * 0.4 + i * 160) % (W + 120)) - 60;
+      const cy = 80 + i * 90;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 30, 14, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx + 20, cy + 4, 22, 11, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx - 20, cy + 4, 22, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, '#6ec6ff');
+    skyGrad.addColorStop(1, '#bfe9ff');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    drawClouds();
+    for (const p of pipes) drawPipe(p);
+    drawGround();
+    drawCircleChar();
+    drawParticles();
+  }
+
+  function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); flap(); }
+  });
+  canvas.addEventListener('mousedown', flap);
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); flap(); }, { passive: false });
+
+  startBtn.addEventListener('click', () => {
+    resetGame();
+    state = 'playing';
+    startScreen.style.display = 'none';
+  });
+
+  retryBtn.addEventListener('click', () => {
+    gameoverScreen.style.display = 'none';
+    resetGame();
+    state = 'playing';
+  });
+
+  const audioEl = document.getElementById('audio-el');
+  const playBtn = document.getElementById('play-btn');
+  const playIcon = document.getElementById('play-icon');
+  const seek = document.getElementById('seek');
+  const curTime = document.getElementById('cur-time');
+  const durTime = document.getElementById('dur-time');
+  const art = document.getElementById('art');
+  const fileInput = document.getElementById('file-input');
+  const trackTitle = document.getElementById('track-title');
+  const trackSub = document.getElementById('track-sub');
+
+  function fmt(t) {
+    if (!isFinite(t)) return '0:00';
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function playTrack() {
+    if (!audioEl.src) return;
+    audioEl.play();
+    art.classList.add('spinning');
+    playIcon.outerHTML = '<svg id="play-icon" viewBox="0 0 24 24" width="24" height="24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+  }
+  function pauseTrack() {
+    audioEl.pause();
+    art.classList.remove('spinning');
+    document.getElementById('play-icon').outerHTML = '<svg id="play-icon" viewBox="0 0 24 24" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>';
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (audioEl.paused) playTrack(); else pauseTrack();
+  });
+
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    audioEl.src = url;
+    trackTitle.textContent = f.name.replace(/\.[^/.]+$/, '');
+    trackSub.textContent = 'Local file';
+    playTrack();
+  });
+
+  audioEl.addEventListener('loadedmetadata', () => {
+    seek.max = audioEl.duration;
+    durTime.textContent = fmt(audioEl.duration);
+  });
+  audioEl.addEventListener('timeupdate', () => {
+    seek.value = audioEl.currentTime;
+    curTime.textContent = fmt(audioEl.currentTime);
+  });
+  seek.addEventListener('input', () => {
+    audioEl.currentTime = seek.value;
+  });
+
+  resetGame();
+  loop();
+})();
+</script>
+</body>
+</html>
