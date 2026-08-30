@@ -155,18 +155,11 @@ def products():
 @app.route('/add_product', methods=('POST',))
 @login_required
 def add_product():
-    name = request.form['name']
-    price = request.form['price']
-    stock = request.form['stock']
+    barcode = request.form.get('barcode')
+    name = request.form.get('name')
+    price = request.form.get('price')
+    stock = request.form.get('stock')
 
-    if not name or not price or not stock:
-        flash('All fields are required!')
-    else:
-        conn = get_db_connection()
-        conn.execute('INSERT INTO products (name, price, stock) VALUES (?, ?, ?)', (name, float(price), int(stock)))
-        conn.commit()
-        conn.close()
-        flash('Product added successfully!')
     return redirect(url_for('products'))
 
 @app.route('/delete_product/<int:id>')
