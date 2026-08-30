@@ -159,54 +159,71 @@
         }
 
     @media (max-width: 768px) {
-        .hero-section,
-        .left-column,
-        .system-info {
-            display: none !important;
+        body {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            height: auto !important;
+            min-height: 100vh !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
         }
 
-        .login-wrapper,
-        .grid-2,
-        .container {
+        .login-wrapper {
             display: flex !important;
             flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
             width: 100% !important;
-            min-height: 80vh !important;
-            padding: 20px !important;
-            box-sizing: border-box !important;
-        }
-
-        .login-card,
-        .login-container {
-            width: 100% !important;
-            max-width: 360px !important;
-            border: none !important;
+            height: auto !important;
             box-shadow: none !important;
-            background: transparent !important;
-            padding: 10px !important;
+            background: #ffffff !important;
         }
 
-        .login-card input[type="text"],
-        .login-card input[type="password"] {
+        .form-section {
+            order: 1 !important;
             width: 100% !important;
-            height: 48px !important;
-            font-size: 16px !important;
-            border-radius: 8px !important;
+            padding: 20px 15px !important;
+            background: #ffffff !important;
+            background-image: none !important;
             box-sizing: border-box !important;
-            margin-bottom: 12px !important;
         }
 
-        .login-card button,
-        .login-card .btn {
-            width: 100% !important;
-            height: 44px !important;
-            font-size: 16px !important;
-            border-radius: 8px !important;
+        .brand-section {
+            order: 2 !important;
             display: flex !important;
+            width: 100% !important;
+            padding: 20px 20px 40px 20px !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+            text-align: center !important;
             align-items: center !important;
-            justify-content: center !important;
+        }
+
+        .brand-section h1,
+        .brand-section h2 {
+            font-size: 24px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .brand-section p {
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            max-width: 100% !important;
+        }
+
+        .login-card {
+            width: 100% !important;
+            max-width: 380px !important;
+            box-shadow: none !important;
+            border: none !important;
+            padding: 10px !important;
+            margin: 0 auto !important;
+        }
+
+        .footer-text {
+            position: static !important;
+            text-align: center !important;
+            margin-top: 20px !important;
+            color: #888888 !important;
         }
     }
     </style>
