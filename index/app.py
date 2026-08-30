@@ -38,44 +38,78 @@ def get_db_connection():
         conn.row_factory = sqlite3.Row
         return conn
 
+
 def init_db():
+    db_url = os.environ.get('DATABASE_URL')
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            barcode TEXT,
-            name TEXT NOT NULL,
-            price REAL NOT NULL,
-            stock INTEGER NOT NULL
-        )
-''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS sales (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            datetime TEXT NOT NULL,
-            total REAL NOT NULL
-        )
-''')
-    # CHANGED HERE: Added 's' to sale_items
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS sale_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sale_id INTEGER,
-            product_name TEXT,
-            qty INTEGER,
-            subtotal REAL, 
-            FOREIGN KEY (sale_id) REFERENCES sales(id)
-        )
-''')
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            recovery_answer TEXT NOT NULL 
-        )
-''')
+
+    if db_url:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS products (
+                id SERIAL PRIMARY KEY,
+                barcode TEXT,
+                name TEXT NOT NULL,
+                price NUMERIC ( 10, 2 ) NOT NULL,
+                stock INTEGER NOT NULL 
+            );
+                
+            CREATE TABLE IF NOT EXISTS sales (
+                id SERIAL PRIMARY KEY,
+                datetime TEXT NOT NULL,
+                total NUMERIC ( 10, 2 ) NOT NULL 
+            );
+
+            CREATE TABLE IF NOT EXISTS sale_items (
+                id SERIAL PRIMARY KEY,
+                sale_id INTEGER,
+                product_name TEXT,
+                qty INTEGER,
+                subtotal NUMERIC ( 10, 2 ), 
+                FOREIGN KEY (sale_id) REFERENCES sales (id)
+            );
+
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                recovery_answer TEXT NOT NULL
+            );
+        ''')
+
+    else:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                barcode TEXT, 
+                name TEXT NOT NULL,
+                price REAL NOT NULL,
+                stock INTEGER NOT NULL 
+            );
+
+            CREATE TABLE IF NOT EXISTS sales (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                datetime TEXT NOT NULL,
+                total REAL NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS sale_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sale_id INTEGER,
+                product_name TEXT,
+                qty INTEGER,
+                subtotal REAL, 
+                FOREIGN KEY (sale_id) REFERENCES sales(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS users(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                recovery_answer TEXT NOT NULL
+            );
+        ''')
+
     conn.commit()
     conn.close()
 
