@@ -143,20 +143,28 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user = request.form['username']
-        pw = request.form['password']
+        username = request.form['username']
+        password = request.form['password']
 
+        db_url = os.environ.get('DATABASE_URL')
         conn = get_db_connection()
-        user_data = conn.execute('SELECT * FROM users WHERE username = ?', (user,)).fetchone()
+        cursor = conn.cursor()
+
+        if db_url:
+            user = conn.execute('SELECT * FROM users WHERE username = %s', (username,)).fetchone()
+        else:
+            user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+
         conn.close()
 
-        if user_data and check_password_hash(user_data['password'], pw):
+        if user and check_password_hash(user['password'], password):
             session['logged_in'] = True
-            session['username'] = user
-            return redirect(url_for('products'))
-        flash("Invalid username or password.")
-    return render_template('login.html')
+            session['username'] = user['username']
+            return redirect(url_for('sales'))
+        else:
+            flash('Invalid username or password')
 
+    return render_template('login.html')
 @app.route('/logout')
 def logout():  # <--- This name must be 'logout'
     session.pop('logged_in', None)
