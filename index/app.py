@@ -1,3 +1,4 @@
+import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
@@ -20,8 +21,9 @@ def login_required(f):
     return decorated_function
 
 def get_db_connection():
-    conn = sqlite3.connect('../sarisari.db')
-    conn.row_factory = sqlite3.Row  # Allows us to access columns by name
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sarisari.db')
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
@@ -337,4 +339,5 @@ def reports():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

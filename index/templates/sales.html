@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="grid-2">
-    <div>
+    <div class="table-responsive">
         <h2>Available Products</h2>
         <form action="{{ url_for('sales') }}" method="GET" style="display: flex; margin-bottom: 10px;">
     <input type="text" name="search" placeholder="Search product to buy..." value="{{ search_query }}"
