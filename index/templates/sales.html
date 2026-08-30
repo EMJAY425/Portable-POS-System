@@ -24,10 +24,10 @@
                     <td>₱{{ "%.2f"|format(product.price) }}</td>
                     <td>{{ product.stock }}</td>
                     <td>
-                        <form method="POST" action="{{ url_for('add_to_cart') }}" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <form method="POST" action="{{ url_for('add_to_cart') }}" class="action-cart-form">
                             <input type="hidden" name="product_id" value="{{ product.id }}">
-                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 50px; text-align: center;">
-                            <button type="submit" class="btn btn-success">Add</button>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+                            <button type="submit" class="btn btn-green">Add</button>
                         </form>
                     </td>
                 </tr>
