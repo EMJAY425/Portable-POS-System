@@ -44,14 +44,15 @@ def init_db():
             total REAL NOT NULL
         )
 ''')
+    # CHANGED HERE: Added 's' to sale_items
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS sale_item (
+        CREATE TABLE IF NOT EXISTS sale_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             sale_id INTEGER,
             product_name TEXT,
             qty INTEGER,
-            subtotal REAL, FOREIGN KEY
-            (sale_id) REFERENCES sales(id)
+            subtotal REAL, 
+            FOREIGN KEY (sale_id) REFERENCES sales(id)
         )
 ''')
     conn.execute('''
@@ -59,7 +60,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            recovery_answer TEXT NOT  NULL 
+            recovery_answer TEXT NOT NULL 
         )
 ''')
     conn.commit()
