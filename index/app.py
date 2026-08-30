@@ -222,8 +222,8 @@ def sales():
 @app.route('/add_to_cart', methods=('POST',))
 @login_required
 def add_to_cart():
-    product_id = request.form.get('product_id')
-    quantity = int(request.form.get('quantity', 1))
+    prod_id = request.form.get('product_id')
+    qty = int(request.form.get('quantity', 1))
 
     conn = get_db_connection()
     product = conn.execute('SELECT * FROM products WHERE id = ?', (prod_id,)).fetchone()
