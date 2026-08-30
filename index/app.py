@@ -128,9 +128,13 @@ def signup():
         answer = request.form['recovery_answer'].lower()
 
         conn = get_db_connection()
+        cursor = conn.cursor()
+        db_url = os.environ.get('DATABASE_URL')
         try:
-            conn.execute('INSERT INTO users (username, password, recovery_answer) VALUES (?, ?, ?)', (user, pw, answer))
+            param = '%s' if db_url else '?'
+            cursor.execute(f'INSERT INTO users (username, password, recovery_answer) VALUES ({param}, {param}, {param})',(user, pw, answer))
             conn.commit()
+
             flash("Account created! You can now log in.")
             return redirect(url_for('login'))
         except:
@@ -151,9 +155,11 @@ def login():
         cursor = conn.cursor()
 
         if db_url:
-            user = conn.execute('SELECT * FROM users WHERE username = %s', (username,)).fetchone()
+            cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
+            user = cursor.fetchone()
         else:
-            user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+            cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+            user = cursor.fetchone()
 
         conn.close()
 
@@ -180,10 +186,15 @@ def forgot_password():
         new_pw = generate_password_hash(request.form['new_password'])
 
         conn = get_db_connection()
-        data = conn.execute('SELECT * FROM users WHERE username = ?', (user,)).fetchone()
+        cursor = conn.cursor()
+        db_url = os.environ.get('DATABASE_URL')
+        param = '%s' if db_url else '?'
+
+        cursor.execute(f'SELECT * FROM users WHERE username = {param}', (user,))
+        data = cursor.fetchone()
 
         if data and data['recovery_answer'] == answer:
-            conn.execute('UPDATE users SET password = ? WHERE username = ?', (new_pw, user))
+            cursor.execute(f'UPDATE users SET password = {param} WHERE username = {param}', (new_pw, user))
             conn.commit()
             flash("Password updated successfully!")
             return redirect(url_for('login'))
@@ -197,12 +208,17 @@ def products():
     search_query = request.args.get('search', '')  # Get the text from the search bar
     conn = get_db_connection()
 
+    cursor = conn.cursor()
+    db_url = os.environ.get('DATABASE_URL')
+    param = '%s' if db_url else '?'
+
     if search_query:
-        # Filter products by name using the LIKE operator
-        query = "SELECT * FROM products WHERE name LIKE ?"
-        products = conn.execute(query, ('%' + search_query + '%',)).fetchall()
+        query = f"SELECT * FROM products WHERE name LIKE {param}"
+        cursor.execute(query, ('%' + search_query + '%',))
+        products = cursor.fetchall()
     else:
-        products = conn.execute('SELECT * FROM products').fetchall()
+        cursor.execute('SELECT * FROM products')
+        products = cursor.fetchall()
 
     conn.close()
     return render_template('products.html', products=products, active_tab='products', search_query=search_query)
@@ -216,8 +232,12 @@ def add_product():
     stock = int(request.form.get('stock'))
 
     conn = get_db_connection()
-    conn.execute(
-        'INSERT INTO products (barcode, name, price, stock) VALUES (?, ?, ?, ?)',
+    cursor = conn.cursor()
+    db_url = os.environ.get('DATABASE_URL')
+    param = '%s' if db_url else '?'
+
+    cursor.execute(
+        f'INSERT INTO products (barcode, name, price, stock) VALUES ({param}, {param}, {param}, {param})',
         (barcode, name, price, stock)
     )
     conn.commit()
@@ -228,9 +248,12 @@ def add_product():
 @login_required
 def get_product_by_barcode(barcode):
     conn = get_db_connection()
-    product = conn.execute(
-        'SELECT * FROM products WHERE barcode = ?', (barcode,)
-    ).fetchone()
+    cursor = conn.cursor()
+    db_url = os.environ.get('DATABASE_URL')
+    param = '%s' if db_url else '?'
+
+    cursor.execute(f'SELECT * FROM products WHERE barcode = {param}', (barcode,))
+    product = cursor.fetchone()
     conn.close()
 
     if product:
@@ -241,7 +264,9 @@ def get_product_by_barcode(barcode):
 @login_required
 def delete_product(id):
     conn = get_db_connection()
-    conn.execute('DELETE FROM products WHERE id = ?', (id,))
+    cursor = conn.cursor()
+    param = '%s' if os.environ.get('DATABASE_URL') else '?'
+    cursor.execute(f'DELETE FROM products WHERE id = {param}', (id,))
     conn.commit()
     conn.close()
     flash('Product deleted!')
@@ -251,7 +276,10 @@ def delete_product(id):
 @login_required
 def edit_product(id):
     conn = get_db_connection()
-    product = conn.execute('SELECT * FROM products WHERE id = ?', (id,)).fetchone()
+    cursor = conn.cursor()
+    param = '%s' if os.environ.get('DATABASE_URL') else '?'
+    cursor.execute(f'SELECT * FROM products WHERE id = {param}', (id,))
+    product = cursor.fetchone()
     conn.close()
     return render_template('edit_product.html', product=product)
 
@@ -263,8 +291,9 @@ def update_product(id):
     stock = request.form['stock']
 
     conn = get_db_connection()
-    conn.execute('UPDATE products SET name = ?, price = ?, stock = ? WHERE id = ?',
-                 (name, float(price), int(stock), id))
+    cursor = conn.cursor()
+    param = '%s' if os.environ.get('DATABASE_URL') else '?'
+    cursor.execute(f'UPDATE products SET name = {param}, price = {param}, stock = {param} WHERE id = {param}',(name, float(price), int(stock), id))
     conn.commit()
     conn.close()
     flash('Product updated successfully!')
@@ -276,12 +305,14 @@ def sales():
     search_query = request.args.get('search', '')
     conn = get_db_connection()
 
+    cursor = conn.cursor()
+    param = '%s' if os.environ.get('DATABASE_URL') else '?'
     if search_query:
-
-        products = conn.execute("SELECT * FROM products WHERE stock > 0 AND name LIKE ?",
-                                ('%' + search_query + '%',)).fetchall()
+        cursor.execute(f"SELECT * FROM products WHERE stock > 0 AND name LIKE {param}", ('%' + search_query + '%',))
+        products = cursor.fetchall()
     else:
-        products = conn.execute('SELECT * FROM products WHERE stock > 0').fetchall()
+        cursor.execute('SELECT * FROM products WHERE stock > 0')
+        products = cursor.fetchall()
 
     conn.close()
     return render_template('sales.html', products=products, cart=session.get('cart', []),
@@ -294,7 +325,10 @@ def add_to_cart():
     qty = int(request.form.get('quantity', 1))
 
     conn = get_db_connection()
-    product = conn.execute('SELECT * FROM products WHERE id = ?', (prod_id,)).fetchone()
+    cursor = conn.cursor()
+    param = '%s' if os.environ.get('DATABASE_URL') else '?'
+    cursor.execute(f'SELECT * FROM products WHERE id = {param}', (prod_id,))
+    product = cursor.fetchone()
     conn.close()
 
     if product and qty > 0 and qty <= product['stock']:
@@ -326,14 +360,25 @@ def checkout():
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # 1. Record Sale
-    cursor.execute('INSERT INTO sales (datetime, total) VALUES (?, ?)', (now, cart_total))
-    sale_id = cursor.lastrowid
+    cursor = conn.cursor()
+    db_url = os.environ.get('DATABASE_URL')
 
-    # 2. Record Items and Deduct Stock
-    for item in cart:
-        cursor.execute('INSERT INTO sale_items (sale_id, product_name, qty, subtotal) VALUES (?, ?, ?, ?)',
-                       (sale_id, item['name'], item['qty'], item['subtotal']))
-        cursor.execute('UPDATE products SET stock = stock - ? WHERE id = ?', (item['qty'], item['id']))
+    if db_url:
+        cursor.execute('INSERT INTO sales (datetime, total) VALUES (%s, %s) RETURNING id', (now, cart_total))
+        sale_id = cursor.fetchone()['id']
+
+        for item in cart:
+            cursor.execute('INSERT INTO sale_items (sale_id, product_name, qty, subtotal) VALUES (%s, %s, %s, %s)',
+                           (sale_id, item['name'], item['qty'], item['subtotal']))
+            cursor.execute('UPDATE products SET stock = stock - %s WHERE id = %s', (item['qty'], item['id']))
+    else:
+        cursor.execute('INSERT INTO sales (datetime, total) VALUES (?, ?)', (now, cart_total))
+        sale_id = cursor.lastrowid
+
+        for item in cart:
+            cursor.execute('INSERT INTO sale_items (sale_id, product_name, qty, subtotal) VALUES (?, ?, ?, ?)',
+                           (sale_id, item['name'], item['qty'], item['subtotal']))
+            cursor.execute('UPDATE products SET stock = stock - ? WHERE id = ?', (item['qty'], item['id']))
 
     conn.commit()
     conn.close()
@@ -370,34 +415,46 @@ def reports():
     # 1. CAPTURE THE FILTER DATE (Critical for the filter to work!)
     filter_date = request.args.get('date')
 
-    # 2. FETCH SALES (Apply filter if date is picked)
-    if filter_date:
-        # We match the date part of the timestamp
-        sales_rows = conn.execute('SELECT * FROM sales WHERE datetime LIKE ? ORDER BY datetime DESC',
-                                  (f'{filter_date}%',)).fetchall()
-    else:
-        sales_rows = conn.execute('SELECT * FROM sales ORDER BY datetime DESC').fetchall()
+    cursor = conn.cursor()
+    db_url = os.environ.get('DATABASE_URL')
+    param = '%s' if db_url else '?'
 
-    # 3. ATTACH PRODUCTS (Rename to products_list to avoid crash)
+    # 2. FETCH SALES
+    if filter_date:
+        cursor.execute(f'SELECT * FROM sales WHERE datetime LIKE {param} ORDER BY datetime DESC', (f'{filter_date}%',))
+        sales_rows = cursor.fetchall()
+    else:
+        cursor.execute('SELECT * FROM sales ORDER BY datetime DESC')
+        sales_rows = cursor.fetchall()
+
     processed_sales = []
     for row in sales_rows:
         sale_dict = dict(row)
-        item_rows = conn.execute('SELECT * FROM sale_items WHERE sale_id = ?', (sale_dict['id'],)).fetchall()
-        # renamos it here to match the HTML fix below
+        cursor.execute(f'SELECT * FROM sale_items WHERE sale_id = {param}', (sale_dict['id'],))
+        item_rows = cursor.fetchall()
         sale_dict['products_list'] = [dict(item) for item in item_rows]
         processed_sales.append(sale_dict)
 
-    # 4. CALCULATE DASHBOARD TOTALS (Keep your current logic here)
+    # 4. CALCULATE TOTALS
     today = datetime.now().strftime('%Y-%m-%d')
     this_month = datetime.now().strftime('%Y-%m')
     this_year = datetime.now().strftime('%Y')
 
-    total_day = conn.execute("SELECT SUM(total) FROM sales WHERE datetime LIKE ?", (f'{today}%',)).fetchone()[0] or 0
-    total_month = conn.execute("SELECT SUM(total) FROM sales WHERE datetime LIKE ?", (f'{this_month}%',)).fetchone()[
-                      0] or 0
-    total_year = conn.execute("SELECT SUM(total) FROM sales WHERE datetime LIKE ?", (f'{this_year}%',)).fetchone()[
-                     0] or 0
-    total_all = conn.execute('SELECT SUM(total) FROM sales').fetchone()[0] or 0
+    cursor.execute(f"SELECT SUM(total) FROM sales WHERE datetime LIKE {param}", (f'{today}%',))
+    res = cursor.fetchone()
+    total_day = (res['sum'] or res[0]) if res and (res['sum'] or res[0]) else 0
+
+    cursor.execute(f"SELECT SUM(total) FROM sales WHERE datetime LIKE {param}", (f'{this_month}%',))
+    res = cursor.fetchone()
+    total_month = (res['sum'] or res[0]) if res and (res['sum'] or res[0]) else 0
+
+    cursor.execute(f"SELECT SUM(total) FROM sales WHERE datetime LIKE {param}", (f'{this_year}%',))
+    res = cursor.fetchone()
+    total_year = (res['sum'] or res[0]) if res and (res['sum'] or res[0]) else 0
+
+    cursor.execute("SELECT SUM(total) FROM sales")
+    res = cursor.fetchone()
+    total_all = (res['sum'] or res[0]) if res and (res['sum'] or res[0]) else 0
 
     conn.close()
 
