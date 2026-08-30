@@ -172,6 +172,7 @@
         .login-wrapper {
             display: flex !important;
             flex-direction: column !important;
+            align-items: center !important;
             width: 100% !important;
             height: auto !important;
             box-shadow: none !important;
@@ -181,17 +182,38 @@
         .form-section {
             order: 1 !important;
             width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
             padding: 20px 15px !important;
             background: #ffffff !important;
             background-image: none !important;
             box-sizing: border-box !important;
         }
 
+        .login-card {
+            width: 100% !important;
+            max-width: 360px !important;
+            box-shadow: none !important;
+            border: none !important;
+            padding: 10px 0 !important;
+            margin: 0 auto !important;
+            position: relative !important;
+        }
+
+        .input-group,
+        .login-card input {
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
         .brand-section {
             order: 2 !important;
             display: flex !important;
+            flex-direction: column !important;
             width: 100% !important;
-            padding: 20px 20px 40px 20px !important;
+            padding: 20px 20px 30px 20px !important;
             background: #ffffff !important;
             box-sizing: border-box !important;
             text-align: center !important;
@@ -200,30 +222,28 @@
 
         .brand-section h1,
         .brand-section h2 {
-            font-size: 24px !important;
+            font-size: 22px !important;
             margin-bottom: 10px !important;
+            text-align: center !important;
         }
 
         .brand-section p {
             font-size: 14px !important;
             line-height: 1.5 !important;
             max-width: 100% !important;
-        }
-
-        .login-card {
-            width: 100% !important;
-            max-width: 380px !important;
-            box-shadow: none !important;
-            border: none !important;
-            padding: 10px !important;
-            margin: 0 auto !important;
+            text-align: center !important;
         }
 
         .footer-text {
+            order: 3 !important;
             position: static !important;
+            width: 100% !important;
             text-align: center !important;
-            margin-top: 20px !important;
+            padding: 20px 0 30px 0 !important;
+            margin: 0 !important;
             color: #888888 !important;
+            font-size: 12px !important;
+            background: #ffffff !important;
         }
     }
     </style>
