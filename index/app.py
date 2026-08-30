@@ -302,20 +302,23 @@ def update_product(id):
 @app.route('/sales')
 @login_required
 def sales():
-    search_query = request.args.get('search', '')
+    search_query = request.args.get('search', '').strip()
     conn = get_db_connection()
     cursor = conn.cursor()
     db_url = os.environ.get('DATABASE_URL')
     param = '%s' if db_url else '?'
 
     if search_query:
-        cursor.execute(f"SELECT * FROM products WHERE stock > 0 AND name LIKE {param}", ('%' + search_query + '%',))
-        products = cursor.fetchall()
+        # Using ILIKE for PostgreSQL case-insensitive search
+        like_op = 'ILIKE' if db_url else 'LIKE'
+        query = f"SELECT * FROM products WHERE stock > 0 AND name {like_op} {param}"
+        cursor.execute(query, (f"%{search_query}%",))
     else:
         cursor.execute('SELECT * FROM products WHERE stock > 0')
-        products = cursor.fetchall()
 
+    products = cursor.fetchall()
     conn.close()
+
     return render_template(
         'sales.html',
         products=products,
