@@ -318,7 +318,7 @@ def sales():
     return render_template('sales.html', products=products, cart=session.get('cart', []),
                            cart_total=session.get('cart_total', 0.0), active_tab='sales', search_query=search_query)
 
-@app.route('/add_to_cart', methods=('POST',))
+@app.route('/add_to_cart', methods=['POST'])
 @login_required
 def add_to_cart():
     prod_id = request.form.get('product_id')
@@ -326,14 +326,23 @@ def add_to_cart():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    param = '%s' if os.environ.get('DATABASE_URL') else '?'
+    db_url = os.environ.get('DATABASE_URL')
+    param = '%s' if db_url else '?'
+
+    # Notice the f-string 'f' before the SQL query
     cursor.execute(f'SELECT * FROM products WHERE id = {param}', (prod_id,))
     product = cursor.fetchone()
     conn.close()
 
     if product and qty > 0 and qty <= product['stock']:
-        subtotal = product['price'] * qty
-        item = {'id': product['id'], 'name': product['name'], 'qty': qty, 'subtotal': subtotal}
+        subtotal = float(product['price']) * qty
+        item = {
+            'id': product['id'],
+            'name': product['name'],
+            'price': float(product['price']),
+            'qty': qty,
+            'subtotal': subtotal
+        }
 
         cart = session.get('cart', [])
         cart.append(item)
