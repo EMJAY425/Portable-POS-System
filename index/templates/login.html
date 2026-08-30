@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sari-Sari Store | Secure Login</title>
     <style>
         /* Main background: Your original Dark Blue */
@@ -13,6 +13,21 @@
             height: 100vh;
             align-items: center;
             justify-content: center;
+        }
+
+        /* Center wrapper and make card fit small mobile screens */
+        .login-container {
+            width: 90%;
+            max-width: 400px;
+            margin: 40px auto;
+            box-sizing: border-box;
+        }
+
+        .login-container input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-bottom: 12px;
         }
 
         .login-wrapper {

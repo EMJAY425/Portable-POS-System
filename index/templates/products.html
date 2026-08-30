@@ -20,16 +20,12 @@
     </form>
 </div>
 
-<div style="margin-bottom: 20px; display: flex; gap: 10px;">
-    <form action="{{ url_for('products') }}" method="GET" style="display: flex; width: 100%;">
-        <input type="text" name="search" placeholder="Search product name..."
-               value="{{ search_query }}"
-               style="flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px 0 0 4px;">
-        <button type="submit" class="btn" style="background-color: #34495e; border-radius: 0 4px 4px 0; padding: 10px 20px;">
-            Search
-        </button>
+<div style="margin-bottom: 20px;">
+    <form action="{{ url_for('products') }}" method="GET" style="display: flex; gap: 8px;">
+        <input type="text" name="search" placeholder="Search product name..." value="{{ search_query }}" style="flex: 1; padding: 10px;">
+        <button type="submit" class="btn" style="background-color: #34495e; color: white; padding: 10px 20px;">Search</button>
         {% if search_query %}
-            <a href="{{ url_for('products') }}" class="btn btn-red" style="padding: 10px;">Clear</a>
+            <a href="{{ url_for('products') }}" class="btn btn-red" style="padding: 10px 15px; text-decoration: none;">Clear</a>
         {% endif %}
     </form>
 </div>
@@ -47,16 +43,12 @@
         </thead>
         <tbody>
             {% for product in products %}
-            <tr>
-                <td>{{ product.id }}</td>
-                <td>{{ product.name }}</td>
-                <td>₱{{ "%.2f"|format(product.price) }}</td>
-                <td>{{ product.stock }}</td>
-                <td style="text-align: right;">
+            <td>
+                <div class="action-buttons">
                     <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-blue">Edit</a>
-                    <a href="{{ url_for('delete_product', id=product.id) }}" class="btn btn-red" onclick="return confirm('Are you sure?')">Delete</a>
-                </td>
-            </tr>
+                    <a href="{{ url_for('delete_product', id=product.id) }}" class="btn btn-red" onclick="return confirm('Delete this product?')">Delete</a>
+                </div>
+            </td>
             {% endfor %}
         </tbody>
     </table>
