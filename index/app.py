@@ -71,9 +71,9 @@ def init_db():
 
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                recovery_answer TEXT NOT NULL
+                username VARCHAR(100) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                recovery_answer VARCHAR(255) NOT NULL
             );
         ''')
 
