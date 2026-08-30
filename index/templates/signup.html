@@ -11,6 +11,41 @@
         input { width: 100%; padding: 11px; margin: 8px 0; border: 1px solid #dddfe2; border-radius: 5px; box-sizing: border-box; background-color: #f5f6f7; }
         .btn-signup { background-color: #00a400; color: white; border: none; width: 100%; padding: 10px; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
         .back-link { display: block; text-align: center; margin-top: 15px; color: #1877f2; text-decoration: none; font-size: 14px; }
+    @media (max-width: 768px) {
+        body {
+            padding: 15px !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background-color: #ffffff !important;
+        }
+
+        signup-card,
+        .container,
+        .form-container {
+            width: 100% !important;
+            max-width: 380px !important;
+            padding: 24px 18px !important;
+            box-sizing: border-box !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100% !important;
+            height: 48px !important;
+            font-size: 16px !important;
+            box-sizing: border-box !important;
+        }
+
+        button,
+        .btn-signup,
+        .btn-submit {
+            width: 100% !important;
+            height: 48px !important;
+            font-size: 16px !important;
+        }
+    }
     </style>
 </head>
 <body>
