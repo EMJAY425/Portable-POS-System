@@ -31,24 +31,30 @@
 </div>
 
 <div class="table-responsive">
-    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <table>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Price</th>
                 <th>Stock</th>
-                <th style="text-align: right;">Action</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             {% for product in products %}
-            <td>
-                <div class="action-buttons">
-                    <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-blue">Edit</a>
-                    <a href="{{ url_for('delete_product', id=product.id) }}" class="btn btn-red" onclick="return confirm('Delete this product?')">Delete</a>
-                </div>
-            </td>
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>₱{{ "%.2f"|format(product.price) }}</td>
+                <td>{{ product.stock }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-blue">Edit</a>
+                        <a href="{{ url_for('delete_product', id=product.id) }}" class="btn btn-red" onclick="return confirm('Delete this product?')">Delete</a>
+                    </div>
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
