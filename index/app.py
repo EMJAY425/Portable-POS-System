@@ -29,13 +29,14 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute(''' 
-            CREATE TABLE IF NOT EXISTS products (
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            barcode TEXT,
             name TEXT NOT NULL,
             price REAL NOT NULL,
             stock INTEGER NOT NULL
-       )
+        )
 ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sales (
@@ -155,12 +156,32 @@ def products():
 @app.route('/add_product', methods=('POST',))
 @login_required
 def add_product():
-    barcode = request.form.get('barcode')
+    barcode = request.form.get('barcode', '').strip()
     name = request.form.get('name')
-    price = request.form.get('price')
-    stock = request.form.get('stock')
+    price = float(request.form.get('price'))
+    stock = int(request.form.get('stock'))
 
+    conn = get_db_connection()
+    conn.execute(
+        'INSERT INTO products (barcode, name, price, stock) VALUES (?, ?, ?, ?)',
+        (barcode, name, price, stock)
+    )
+    conn.commit()
+    conn.close()
     return redirect(url_for('products'))
+
+@app.route('/get_product_by_barcode/<barcode>')
+@login_required
+def get_product_by_barcode(barcode):
+    conn = get_db_connection()
+    product = conn.execute(
+        'SELECT * FROM products WHERE barcode = ?', (barcode,)
+    ).fetchone()
+    conn.close()
+
+    if product:
+        return {'success': True, 'id': product['id'], 'name': product['name'], 'price': product['price'], 'stock': product['stock']}
+    return {'success': False, 'message': 'Product not registered in inventory!'}
 
 @app.route('/delete_product/<int:id>')
 @login_required

@@ -3,6 +3,65 @@
 <div class="grid-2">
     <div class="table-responsive">
         <h2>Available Products</h2>
+        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+        <button type="button" onclick="startSalesScanner()" class="btn-green" style="margin-bottom: 15px;">
+        📷 Scan Barcode to Sell
+        </button>
+
+        <div id="sales-reader" style="width: 100%; max-width: 400px; display: none; margin: 0 auto 20px auto;"></div>
+
+        <script>
+        let salesScanner;
+
+        function startSalesScanner() {
+            document.getElementById('sales-reader').style.display = 'block';
+            salesScanner = new Html5Qrcode("sales-reader");
+
+            salesScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                (barcode) => {
+                    salesScanner.stop().then(() => {
+                        document.getElementById('sales-reader').style.display = 'none';
+                        fetchProductByBarcode(barcode);
+                    });
+                },
+                (err) => {}
+            ).catch(err => alert("Camera permission required: " + err));
+        }
+
+        function fetchProductByBarcode(barcode) {
+            fetch('/get_product_by_barcode/' + barcode)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Dynamically submit scanned item directly to add_to_cart route
+                        let form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = "{{ url_for('add_to_cart') }}";
+
+                        let idInput = document.createElement('input');
+                        idInput.type = 'hidden';
+                        idInput.name = 'product_id';
+                        idInput.value = data.id;
+
+                        let qtyInput = document.createElement('input');
+                        qtyInput.type = 'hidden';
+                        qtyInput.name = 'quantity';
+                        qtyInput.value = 1;
+
+                        form.appendChild(idInput);
+                        form.appendChild(qtyInput);
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => alert("Error scanning item: " + err));
+        }
+        </script>
         <form action="{{ url_for('sales') }}" method="GET" style="display: flex; margin-bottom: 10px;">
     <input type="text" name="search" placeholder="Search product to buy..." value="{{ search_query }}"
            style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px 0 0 4px;">
