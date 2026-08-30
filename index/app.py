@@ -166,7 +166,7 @@ def login():
         if user and check_password_hash(user['password'], password):
             session['logged_in'] = True
             session['username'] = user['username']
-            return redirect(url_for('sales'))
+            return redirect(url_for('products'))
         else:
             flash('Invalid username or password')
 
@@ -304,9 +304,10 @@ def update_product(id):
 def sales():
     search_query = request.args.get('search', '')
     conn = get_db_connection()
-
     cursor = conn.cursor()
-    param = '%s' if os.environ.get('DATABASE_URL') else '?'
+    db_url = os.environ.get('DATABASE_URL')
+    param = '%s' if db_url else '?'
+
     if search_query:
         cursor.execute(f"SELECT * FROM products WHERE stock > 0 AND name LIKE {param}", ('%' + search_query + '%',))
         products = cursor.fetchall()
@@ -315,8 +316,14 @@ def sales():
         products = cursor.fetchall()
 
     conn.close()
-    return render_template('sales.html', products=products, cart=session.get('cart', []),
-                           cart_total=session.get('cart_total', 0.0), active_tab='sales', search_query=search_query)
+    return render_template(
+        'sales.html',
+        products=products,
+        cart=session.get('cart', []),
+        cart_total=session.get('cart_total', 0.0),
+        active_tab='sales',
+        search_query=search_query
+    )
 
 @app.route('/add_to_cart', methods=['POST'])
 @login_required
