@@ -345,13 +345,13 @@ def add_to_cart():
     conn.close()
 
     if product and qty > 0 and qty <= product['stock']:
-        subtotal = float(product['price']) * qty
+        subtotal = float(product['price']) * int(qty)
         item = {
             'id': product['id'],
             'name': product['name'],
             'price': float(product['price']),
-            'qty': qty,
-            'subtotal': subtotal
+            'qty': int(qty),
+            'subtotal': float(subtotal)
         }
 
         cart = session.get('cart', [])

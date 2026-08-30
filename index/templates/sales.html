@@ -107,7 +107,7 @@
             <tr>
                 <td>{{ item.name }}</td>
                 <td>{{ item.qty }}</td>
-                <td>₱{{ "%.2f"|format(item.subtotal) }}</td>
+                <td>₱{{ "%.2f"|format(item.subtotal|float) }}</td>
             </tr>
             {% else %}
             <tr>
