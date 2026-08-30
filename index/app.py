@@ -123,54 +123,68 @@ with app.app_context():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        user = request.form['username']
-        pw = generate_password_hash(request.form['password'])
-        answer = request.form['recovery_answer'].lower()
+        user = request.form.get('username', '').strip()
+        pw = request.form.get('password', '').strip()
+        answer = request.form.get('recovery_answer', '').strip()
+
+        if not user or not pw or not answer:
+            flash('All fields are required.')
+            return render_template('signup.html')
 
         conn = get_db_connection()
         cursor = conn.cursor()
         db_url = os.environ.get('DATABASE_URL')
-        try:
-            param = '%s' if db_url else '?'
-            cursor.execute(f'INSERT INTO users (username, password, recovery_answer) VALUES ({param}, {param}, {param})',(user, pw, answer))
-            conn.commit()
+        param = '%s' if db_url else '?'
 
-            flash("Account created! You can now log in.")
-            return redirect(url_for('login'))
-        except:
-            flash("Username already exists.")
-        finally:
+        # Check if username already exists to protect existing accounts
+        cursor.execute(f"SELECT id FROM users WHERE username = {param}", (user,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
             conn.close()
+            flash('Username already taken. Please choose another one.')
+            return render_template('signup.html')
+
+        # Hash password and store new user record
+        hashed_pw = generate_password_hash(pw)
+        cursor.execute(
+            f"INSERT INTO users (username, password, recovery_answer) VALUES ({param}, {param}, {param})",
+            (user, hashed_pw, answer)
+        )
+        conn.commit()
+        conn.close()
+
+        flash('Account created successfully! Please log in.')
+        return redirect(url_for('login'))
+
     return render_template('signup.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        user_input = request.form.get('username', '').strip()
+        pw_input = request.form.get('password', '').strip()
 
-        db_url = os.environ.get('DATABASE_URL')
         conn = get_db_connection()
         cursor = conn.cursor()
+        db_url = os.environ.get('DATABASE_URL')
+        param = '%s' if db_url else '?'
 
-        if db_url:
-            cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
-            user = cursor.fetchone()
-        else:
-            cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
-            user = cursor.fetchone()
-
+        cursor.execute(f"SELECT * FROM users WHERE username = {param}", (user_input,))
+        user = cursor.fetchone()
         conn.close()
 
-        if user and check_password_hash(user['password'], password):
+        # Check plain password or hashed password for backwards compatibility
+        if user and (user['password'] == pw_input or check_password_hash(user['password'], pw_input)):
             session['logged_in'] = True
             session['username'] = user['username']
             return redirect(url_for('products'))
         else:
-            flash('Invalid username or password')
+            flash('Invalid username or password.')
 
     return render_template('login.html')
+
 @app.route('/logout')
 def logout():  # <--- This name must be 'logout'
     session.pop('logged_in', None)
