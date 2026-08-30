@@ -2,6 +2,8 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from functools import wraps
 from datetime import datetime
 
@@ -21,10 +23,20 @@ def login_required(f):
     return decorated_function
 
 def get_db_connection():
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sarisari.db')
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    return conn
+    db_url = os.environ.get('DATABASE_URL')
+
+    # Render Production Environment (PostgreSQL)
+    if db_url:
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
+
+    # Local PC Environment (SQLite)
+    else:
+        db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sarisari.db')
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
 
 def init_db():
     conn = get_db_connection()
