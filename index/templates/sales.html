@@ -16,13 +16,18 @@
                 <th>Action</th>
             </tr>
             {% for product in products %}
-            <td>
-                <form method="POST" action="/add_to_cart" class="cart-action-cell">
-                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 60px; text-align: center;">
-                    <button type="submit" class="btn btn-success">Add</button>
-                </form>
-            </td>
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>₱{{ "%.2f"|format(product.price) }}</td>
+                <td>{{ product.stock }}</td>
+                <td>
+                    <form action="/add_to_cart" method="POST">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                        <button type="submit">Add</button>
+                    </form>
+                </td>
+            </tr>
             {% endfor %}
         </table>
     </div>
