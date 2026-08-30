@@ -9,21 +9,30 @@
     <button type="submit" class="btn" style="background-color: #34495e; border-radius: 0 4px 4px 0;">Search</button>
         </form>
         <table>
-            <tr>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Action</th>
-            </tr>
-            {% for product in products %}
-            <td>
-                <form method="POST" action="{{ url_for('add_to_cart') }}" class="cart-action-cell">
-                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 60px; text-align: center;">
-                    <button type="submit" class="btn btn-success">Add</button>
-                </form>
-            </td>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>₱{{ "%.2f"|format(product.price) }}</td>
+                    <td>{{ product.stock }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('add_to_cart') }}" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 50px; text-align: center;">
+                            <button type="submit" class="btn btn-success">Add</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 
